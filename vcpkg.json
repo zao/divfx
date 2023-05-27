@@ -2,6 +2,7 @@
     "name": "divfx",
     "version-date": "2023-05-24",
     "dependencies": [
+        "directxtex",
         "directxtk",
         "fmt",
         "glfw3",

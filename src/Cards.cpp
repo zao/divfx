@@ -32,25 +32,12 @@ CardLayer::CardLayer(Dx &dx, DivFxCompiler const &divFxCompiler) : dx_(dx), vsCb
         hr = dx.dev->CreateVertexShader(bytecode->GetBufferPointer(), bytecode->GetBufferSize(), nullptr, &vs_);
 
         {
-            UiVertex verts[4]{};
-            for (int row = 0; row < 2; ++row) {
-                for (int col = 0; col < 2; ++col) {
-                    auto &v = verts[col + row * 2];
-                    glm::vec2 size = glm::vec2(eCardWidth, eCardHeight) * 3.0f;
-                    v.pos = glm::mix({0, 0}, size, glm::vec2{col, row});
-                    v.uv = glm::vec2(col, row);
-                    v.color = glm::u8vec4(255, 255, 255, 255);
-                    v.satScaleLocalUv = glm::vec4(1.0f, 1.0f, v.uv);
-                }
-            }
-
             D3D11_BUFFER_DESC vbd{
-                .ByteWidth = std::span(verts).size_bytes(),
-                .Usage = D3D11_USAGE_IMMUTABLE,
+                .ByteWidth = sizeof(UiVertex) * 4,
+                .Usage = D3D11_USAGE_DEFAULT,
                 .BindFlags = D3D11_BIND_VERTEX_BUFFER,
             };
-            D3D11_SUBRESOURCE_DATA vsrd{std::data(verts)};
-            hr = dx.dev->CreateBuffer(&vbd, &vsrd, &vb_);
+            hr = dx.dev->CreateBuffer(&vbd, nullptr, &vb_);
 
             uint16_t indices[]{0, 1, 2, 1, 3, 2};
             D3D11_BUFFER_DESC ibd{
@@ -130,6 +117,21 @@ void CardLayer::SetViewTransform(glm::mat4 transform) {
 
 void CardLayer::Draw(glm::ivec2 pos, glm::ivec2 size) {
     auto &ctx = dx_.ctx;
+
+    {
+        UiVertex verts[4]{};
+        for (int row = 0; row < 2; ++row) {
+            for (int col = 0; col < 2; ++col) {
+                auto &v = verts[col + row * 2];
+                glm::vec2 fpos = pos, fsize = size;
+                v.pos = glm::mix(fpos, fpos + fsize, glm::vec2{col, row});
+                v.uv = glm::vec2(col, row);
+                v.color = glm::u8vec4(255, 255, 255, 255);
+                v.satScaleLocalUv = glm::vec4(1.0f, 1.0f, v.uv);
+            }
+        }
+        dx_.ctx->UpdateSubresource(vb_, 0, nullptr, std::data(verts), 0, 0);
+    }
 
     if (vsCbDirty_) {
         ctx->UpdateSubresource(vsCb_, 0, nullptr, &vsCbCpu_, 0, 0);

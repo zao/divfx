@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 project(divfx)
 
+find_package(directxtex CONFIG REQUIRED)
 find_package(directxtk CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
@@ -23,6 +24,7 @@ target_link_libraries(divfx PRIVATE
 	"d3dcompiler.lib"
 	"dxgi.lib"
     "shcore.lib"
+    Microsoft::DirectXTex
     Microsoft::DirectXTK
 	fmt::fmt-header-only
 	glfw
