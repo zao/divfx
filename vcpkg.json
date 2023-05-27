@@ -1,0 +1,10 @@
+{
+    "name": "divfx",
+    "version-date": "2023-05-24",
+    "dependencies": [
+        "directxtk",
+        "fmt",
+        "glfw3",
+        "glm"
+    ]
+}
